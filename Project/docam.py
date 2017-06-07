@@ -2,6 +2,8 @@
 # Imports
 # ------------------------
 
+import sys
+import bluetooth
 import pygame                           # Afspelen audio via bluetooth-speaker
 import RPi.GPIO as GPIO                 # GPIO
 import time                             # Time
@@ -47,6 +49,15 @@ framerate = 60                          # Default framerate van video's
 GPIO.setup(pir, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
 GPIO.setup(knop, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.setup(led, GPIO.OUT)
+
+def bluetoothScan():
+    call('killall -9 pulseaudio', shell=True)
+    time.sleep(3)
+    call('pulseaudio --start', shell=True)
+    time.sleep(2)
+    call('~/scripts/autopair', shell=True)
+    time.sleep(2)
+    call('pacmd set-default-sink bluez_sink.30_21_36_04_04_6C', shell=True)
 
 def cameraSettings():
     camera.resolution = (default_width, default_height)
@@ -111,9 +122,10 @@ def record_video():
         motion_detected = False
 
 try:
+    bluetoothScan()
     while motion_sensor == True:
-        #take_picture()
-        record_video()
+        take_picture()
+        #record_video()
 
 except KeyboardInterrupt:
     GPIO.output(led, GPIO.LOW)
